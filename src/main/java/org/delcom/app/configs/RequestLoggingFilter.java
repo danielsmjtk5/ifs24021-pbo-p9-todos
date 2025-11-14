@@ -1,65 +1,57 @@
 package org.delcom.app.configs;
 
+import java.io.IOException;
+import java.util.Arrays;
+
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-import org.springframework.web.filter.OncePerRequestFilter;
-
-import java.io.IOException;
-import java.util.Arrays;
 
 @Component
 public class RequestLoggingFilter extends OncePerRequestFilter {
 
-    private static final String RESET = "\u001B[0m";
-    private static final String GREEN = "\u001B[32m";
-    private static final String YELLOW = "\u001B[33m";
-    private static final String RED = "\u001B[31m";
-    private static final String CYAN = "\u001B[36m";
-
-    @Value("${server.port:8080}")
+    @SuppressWarnings("unused")
     private int port;
 
-    @Value("${spring.devtools.livereload.enabled:false}")
+    @SuppressWarnings("unused")
     private boolean livereload;
+
+    private static final String RESET  = "\u001B[0m";
+    private static final String GREEN  = "\u001B[32m";
+    private static final String YELLOW = "\u001B[33m";
+    private static final String RED    = "\u001B[31m";
+    private static final String CYAN   = "\u001B[36m";
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
-            HttpServletResponse response,
-            FilterChain filterChain)
+                                    HttpServletResponse response,
+                                    FilterChain filterChain)
             throws ServletException, IOException {
 
         long start = System.currentTimeMillis();
+
         filterChain.doFilter(request, response);
+
         long duration = System.currentTimeMillis() - start;
-
         int status = response.getStatus();
-        String color;
-        if (status >= 500) {
-            color = RED;
-        } else if (status >= 400) {
-            color = YELLOW;
-        } else if (status >= 200) {
-            color = GREEN;
-        } else {
-            color = CYAN;
-        }
 
-        // Ambil asal kode dari stacktrace
-        StackTraceElement[] stack = Thread.currentThread().getStackTrace();
-        StackTraceElement origin = Arrays.stream(stack)
-                .filter(s -> s.getClassName().startsWith("org.delcom"))
-                .findFirst()
-                .orElse(stack[stack.length - 1]);
-        String originInfo = origin.getClassName() + "." + origin.getMethodName() + ":" + origin.getLineNumber();
+        String color = getColorForStatus(status);
+
+        String originInfo = getOriginFromStack();
 
         String remoteAddr = request.getRemoteAddr();
 
-        String log = String.format(
-                "%s%-6s %s %d %dms%s [%s] from %s",
+        // Skip well-known requests
+        if (request.getRequestURI().startsWith("/.well-known")) {
+            return;
+        }
+
+        System.out.printf(
+                "%s%-6s %s %d %dms%s [%s] from %s%n",
                 color,
                 request.getMethod(),
                 request.getRequestURI(),
@@ -67,10 +59,22 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
                 duration,
                 RESET,
                 originInfo,
-                remoteAddr);
+                remoteAddr
+        );
+    }
 
-        if (!request.getRequestURI().startsWith("/.well-known")) {
-            System.out.println(log);
-        }
+    private String getColorForStatus(int status) {
+        if (status >= 500) return RED;
+        if (status >= 400) return YELLOW;
+        if (status >= 200) return GREEN;
+        return CYAN;
+    }
+
+    private String getOriginFromStack() {
+        return Arrays.stream(Thread.currentThread().getStackTrace())
+                .filter(s -> s.getClassName().startsWith("org.delcom"))
+                .findFirst()
+                .map(s -> s.getClassName() + "." + s.getMethodName() + ":" + s.getLineNumber())
+                .orElse("unknown");
     }
 }

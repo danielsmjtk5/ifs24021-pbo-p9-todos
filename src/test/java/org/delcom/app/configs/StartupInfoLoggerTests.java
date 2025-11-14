@@ -1,16 +1,16 @@
 package org.delcom.app.configs;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.core.env.ConfigurableEnvironment;
-import org.springframework.context.ConfigurableApplicationContext;
-
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.core.env.ConfigurableEnvironment;
 
 class StartupInfoLoggerTests {
 
@@ -23,6 +23,7 @@ class StartupInfoLoggerTests {
     private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
 
     @BeforeEach
+   
     void setup() {
         // Redirect System.out
         System.setOut(new PrintStream(outContent));

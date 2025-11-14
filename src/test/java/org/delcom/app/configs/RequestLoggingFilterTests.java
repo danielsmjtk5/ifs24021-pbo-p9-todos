@@ -1,17 +1,19 @@
 package org.delcom.app.configs;
 
+import java.io.IOException;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import org.springframework.test.util.ReflectionTestUtils;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.springframework.test.util.ReflectionTestUtils;
-
-import java.io.IOException;
-
-import static org.mockito.Mockito.*;
 
 class RequestLoggingFilterTests {
 
