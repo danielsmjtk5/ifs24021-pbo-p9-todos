@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ApiResponse<T> {
+
     private String status;
     private String message;
     private T data;
@@ -14,16 +15,33 @@ public class ApiResponse<T> {
         this.data = data;
     }
 
-    // Getter & Setter
+    public ApiResponse(String status, String message) {
+        this.status = status;
+        this.message = message;
+    }
+
+    // Getters and Setters
     public String getStatus() {
         return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     public String getMessage() {
         return message;
     }
 
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
     public T getData() {
         return data;
+    }
+
+    public void setData(T data) {
+        this.data = data;
     }
 }
