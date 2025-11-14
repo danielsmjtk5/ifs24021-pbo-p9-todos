@@ -12,21 +12,21 @@ Content-Type: application/json
     "description": "Mempelajari dasar-dasar PBO untuk pengembangan aplikasi web."
 }
 ###
+ 
 
 # @name GetAllTodos
 GET {{BaseUrl}}/todos
 ###
 
-# @name GetAllTodosWithSearch
-GET {{BaseUrl}}/todos?search=PBO
-###
 
-## Mengambil ID Todo pertama dari response GetAllTodos
+## Ambil ID Todo pertama **SETELAH** GetAllTodos dijalankan
 @todoId = {{GetAllTodos.response.body.data.todos[0].id}}
+
 
 # @name GetTodoById
 GET {{BaseUrl}}/todos/{{todoId}}
 ###
+
 
 # @name PutTodoById
 PUT {{BaseUrl}}/todos/{{todoId}}
@@ -38,6 +38,7 @@ Content-Type: application/json
     "isFinished": true
 }
 ###
+
 
 # @name DeleteTodoById
 DELETE {{BaseUrl}}/todos/{{todoId}}

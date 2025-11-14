@@ -36,10 +36,11 @@ public class TodoController {
         }
 
         Todo newTodo = todoService.createTodo(todo.getTitle(), todo.getDescription());
-        return new ApiResponse<Map<String, UUID>>(
-                "success",
-                "Todo berhasil dibuat",
-                Map.of("id", newTodo.getId()));
+        return new ApiResponse<>(
+        "success",
+        "Todo berhasil dibuat",
+        Map.of("id", newTodo.getId()));
+
     }
 
     // Mendapatkan semua todo dengan opsi pencarian

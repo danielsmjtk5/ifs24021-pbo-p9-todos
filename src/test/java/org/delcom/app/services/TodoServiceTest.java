@@ -1,10 +1,13 @@
 
 package org.delcom.app.services;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.delcom.app.entities.Todo;
@@ -14,108 +17,120 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 public class TodoServiceTest {
+
     @Test
-    @DisplayName("Pengujian untuk service Todo")
+    @DisplayName("Pengujian lengkap untuk TodoService")
     void testTodoService() throws Exception {
-        // Buat random UUID
+
+        // ------------------------------------
+        // Setup data
+        // ------------------------------------
         UUID todoId = UUID.randomUUID();
         UUID nonexistentTodoId = UUID.randomUUID();
 
-        // Membuat dummy data
         Todo todo = new Todo("Belajar Spring Boot", "Belajar mock repository di unit test", false);
         todo.setId(todoId);
 
-        // Membuat mock TodoRepository
-        // Buat mock
+        // ------------------------------------
+        // Mock repository
+        // ------------------------------------
         TodoRepository todoRepository = Mockito.mock(TodoRepository.class);
 
-        // Atur perilaku mock
         when(todoRepository.save(any(Todo.class))).thenReturn(todo);
-        when(todoRepository.findByKeyword("Belajar")).thenReturn(java.util.List.of(todo));
-        when(todoRepository.findAll()).thenReturn(java.util.List.of(todo));
-        when(todoRepository.findById(todoId)).thenReturn(java.util.Optional.of(todo));
-        when(todoRepository.findById(nonexistentTodoId)).thenReturn(java.util.Optional.empty());
+        when(todoRepository.findByKeyword("Belajar")).thenReturn(List.of(todo));
+        when(todoRepository.findAll()).thenReturn(List.of(todo));
+        when(todoRepository.findById(todoId)).thenReturn(Optional.of(todo));
+        when(todoRepository.findById(nonexistentTodoId)).thenReturn(Optional.empty());
         when(todoRepository.existsById(todoId)).thenReturn(true);
         when(todoRepository.existsById(nonexistentTodoId)).thenReturn(false);
         doNothing().when(todoRepository).deleteById(any(UUID.class));
 
-        // Membuat instance service
+        // ------------------------------------
+        // Service instance
+        // ------------------------------------
         TodoService todoService = new TodoService(todoRepository);
-        assert (todoService != null);
+        assertNotNull(todoService);
 
-        // Menguji create todo
-        {
-            Todo createdTodo = todoService.createTodo(todo.getTitle(), todo.getDescription());
-            assert (createdTodo != null);
-            assert (createdTodo.getId().equals(todoId));
-            assert (createdTodo.getTitle().equals(todo.getTitle()));
-            assert (createdTodo.getDescription().equals(todo.getDescription()));
-        }
+        // ------------------------------------
+        // Test createTodo
+        // ------------------------------------
+        Todo createdTodo = todoService.createTodo(todo.getTitle(), todo.getDescription());
+        assertNotNull(createdTodo);
+        assertEquals(todoId, createdTodo.getId());
+        assertEquals(todo.getTitle(), createdTodo.getTitle());
+        assertEquals(todo.getDescription(), createdTodo.getDescription());
 
-        // Menguji getAllTodos
-        {
-            var todos = todoService.getAllTodos(null);
-            assert (todos.size() == 1);
-        }
+        // ------------------------------------
+        // Test getAllTodos tanpa search
+        // ------------------------------------
+        List<Todo> allTodos = todoService.getAllTodos(null);
+        assertEquals(1, allTodos.size());
 
-        // Menguji getAllTodos dengan pencarian
-        {
-            var todos = todoService.getAllTodos("Belajar");
-            assert (todos.size() == 1);
+        // ------------------------------------
+        // Test getAllTodos dengan search
+        // ------------------------------------
+        List<Todo> searchedTodos = todoService.getAllTodos("Belajar");
+        assertEquals(1, searchedTodos.size());
 
-            todos = todoService.getAllTodos("     ");
-            assert (todos.size() == 1);
-        }
+        // Search hanya whitespace → dianggap fetch all
+        List<Todo> whitespaceSearch = todoService.getAllTodos("     ");
+        assertEquals(1, whitespaceSearch.size());
 
-        // Menguji getTodoById
-        {
-            Todo fetchedTodo = todoService.getTodoById(todoId);
-            assert (fetchedTodo != null);
-            assert (fetchedTodo.getId().equals(todoId));
-            assert (fetchedTodo.getTitle().equals(todo.getTitle()));
-            assert (fetchedTodo.getDescription().equals(todo.getDescription()));
-        }
+        // ------------------------------------
+        // Test getTodoById (data ada)
+        // ------------------------------------
+        Todo fetchedTodo = todoService.getTodoById(todoId);
+        assertNotNull(fetchedTodo);
+        assertEquals(todoId, fetchedTodo.getId());
+        assertEquals(todo.getTitle(), fetchedTodo.getTitle());
+        assertEquals(todo.getDescription(), fetchedTodo.getDescription());
 
-        // Menguji getTodoById dengan ID yang tidak ada
-        {
-            Todo fetchedTodo = todoService.getTodoById(nonexistentTodoId);
-            assert (fetchedTodo == null);
-        }
+        // ------------------------------------
+        // Test getTodoById (data tidak ada)
+        // ------------------------------------
+        Todo nonExistentFetchedTodo = todoService.getTodoById(nonexistentTodoId);
+        assertNull(nonExistentFetchedTodo);
 
-        // Menguji updateTodo
-        {
-            String updatedTitle = "Belajar Spring Boot Lanjutan";
-            String updatedDescription = "Belajar mock repository di unit test dengan Mockito";
-            Boolean updatedIsFinished = true;
+        // ------------------------------------
+        // Test updateTodo (data ada)
+        // ------------------------------------
+        String updatedTitle = "Belajar Spring Boot Lanjutan";
+        String updatedDescription = "Belajar mock repository di unit test dengan Mockito";
+        boolean updatedIsFinished = true;
 
-            Todo updatedTodo = todoService.updateTodo(todoId, updatedTitle, updatedDescription, updatedIsFinished);
-            assert (updatedTodo != null);
-            assert (updatedTodo.getTitle().equals(updatedTitle));
-            assert (updatedTodo.getDescription().equals(updatedDescription));
-            assert (updatedTodo.isFinished() == updatedIsFinished);
-        }
+        Todo updatedTodo = todoService.updateTodo(
+                todoId,
+                updatedTitle,
+                updatedDescription,
+                updatedIsFinished
+        );
 
-        // Menguji update Todo dengan ID yang tidak ada
-        {
-            String updatedTitle = "Belajar Spring Boot Lanjutan";
-            String updatedDescription = "Belajar mock repository di unit test dengan Mockito";
-            Boolean updatedIsFinished = true;
+        assertNotNull(updatedTodo);
+        assertEquals(updatedTitle, updatedTodo.getTitle());
+        assertEquals(updatedDescription, updatedTodo.getDescription());
+        assertEquals(updatedIsFinished, updatedTodo.isFinished());
 
-            Todo updatedTodo = todoService.updateTodo(nonexistentTodoId, updatedTitle, updatedDescription,
-                    updatedIsFinished);
-            assert (updatedTodo == null);
-        }
+        // ------------------------------------
+        // Test updateTodo (data tidak ada)
+        // ------------------------------------
+        Todo nonExistentUpdated = todoService.updateTodo(
+                nonexistentTodoId,
+                updatedTitle,
+                updatedDescription,
+                updatedIsFinished
+        );
+        assertNull(nonExistentUpdated);
 
-        // Menguji deleteTodo
-        {
-            boolean deleted = todoService.deleteTodo(todoId);
-            assert (deleted == true);
-        }
+        // ------------------------------------
+        // Test deleteTodo (data ada)
+        // ------------------------------------
+        boolean deleted = todoService.deleteTodo(todoId);
+        assertTrue(deleted);
 
-        // Menguji deleteTodo dengan ID yang tidak ada
-        {
-            boolean deleted = todoService.deleteTodo(nonexistentTodoId);
-            assert (deleted == false);
-        }
+        // ------------------------------------
+        // Test deleteTodo (data tidak ada)
+        // ------------------------------------
+        boolean deleteNonExistent = todoService.deleteTodo(nonexistentTodoId);
+        assertFalse(deleteNonExistent);
     }
 }
