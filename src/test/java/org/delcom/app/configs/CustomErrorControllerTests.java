@@ -1,11 +1,7 @@
 package org.delcom.app.configs;
 
-import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import static org.mockito.ArgumentMatchers.any;
 import org.mockito.Mockito;
 import org.springframework.boot.web.error.ErrorAttributeOptions;
 import org.springframework.boot.webmvc.error.ErrorAttributes;
@@ -14,20 +10,28 @@ import org.springframework.web.context.request.ServletWebRequest;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 
 class CustomErrorControllerTest {
 
     @Test
     @DisplayName("Mengembalikan response error dengan status 500")
     void testHandleErrorReturns500() {
-        Map<String, Object> errorMap = Map.of();
+        Map<String, Object> errorMap = Map.of(
+                "status", 500,
+                "error", "Unknown Error",
+                "path", "unknown"
+        );
 
         ErrorAttributes errorAttributes = Mockito.mock(ErrorAttributes.class);
         Mockito.when(
-                        errorAttributes.getErrorAttributes(
-                                any(ServletWebRequest.class),
-                                any(ErrorAttributeOptions.class)))
-                .thenReturn(errorMap);
+                errorAttributes.getErrorAttributes(
+                        any(ServletWebRequest.class),
+                        any(ErrorAttributeOptions.class))
+        ).thenReturn(errorMap);
 
         CustomErrorController controller = new CustomErrorController(errorAttributes);
 
@@ -49,14 +53,15 @@ class CustomErrorControllerTest {
         Map<String, Object> errorMap = Map.of(
                 "status", 404,
                 "error", "Not Found",
-                "path", "/error404");
+                "path", "/error404"
+        );
 
         ErrorAttributes errorAttributes = Mockito.mock(ErrorAttributes.class);
         Mockito.when(
-                        errorAttributes.getErrorAttributes(
-                                any(ServletWebRequest.class),
-                                any(ErrorAttributeOptions.class)))
-                .thenReturn(errorMap);
+                errorAttributes.getErrorAttributes(
+                        any(ServletWebRequest.class),
+                        any(ErrorAttributeOptions.class))
+        ).thenReturn(errorMap);
 
         CustomErrorController controller = new CustomErrorController(errorAttributes);
 
